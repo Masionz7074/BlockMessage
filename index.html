@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BlockMessge</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      transition: background 0.3s;
+    }
+
+    #concealBar {
+      height: 48px;
+      background-color: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 10px;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 10;
+    }
+
+    body.dark {
+      background-color: #121212;
+      color: white;
+    }
+
+    body.light {
+      background-color: #ffffff;
+      color: black;
+    }
+
+    .light #concealBar {
+      background-color: #eee;
+    }
+
+    #toggleSideBtn {
+      background: #444;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #toggleSideBtn:hover {
+      background-color: #666;
+    }
+
+    .light #toggleSideBtn {
+      background: #ccc;
+      color: black;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 58px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .message {
+      max-width: 60%;
+      padding: 8px 12px;
+      border-radius: 10px;
+      word-wrap: break-word;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .dark .you-black {
+      align-self: flex-end;
+      background-color: #1a1a1a;
+      color: white;
+    }
+
+    .dark .you-white {
+      align-self: flex-start;
+      background-color: #ffffff;
+      color: black;
+    }
+
+    .light .you-white {
+      align-self: flex-start;
+      background-color: #ffffff;
+      color: black;
+      border: 1px solid #ccc;
+    }
+
+    .light .you-black {
+      align-self: flex-end;
+      background-color: #1a1a1a;
+      color: white;
+    }
+
+    #input-area {
+      display: flex;
+      padding: 10px;
+      background-color: #111;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 0.3s;
+    }
+
+    .light #input-area {
+      background-color: #eee;
+    }
+
+    #botSetupBtn {
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      user-select: none;
+    }
+    #botSetupBtn:hover {
+      background-color: #666;
+    }
+
+    .light #botSetupBtn {
+      background-color: #ccc;
+      color: black;
+    }
+
+    #messageInput {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      font-family: monospace;
+      background-color: #333;
+      color: white;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .light #messageInput {
+      background-color: #fff;
+      color: black;
+    }
+
+    #sendBtn {
+      margin-left: 10px;
+      padding: 8px 12px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #sendBtn:hover {
+      background-color: #666;
+    }
+
+    .light #sendBtn {
+      background-color: #ccc;
+      color: black;
+    }
+
+    /* Startup modal styled like messaging input area */
+    #startupModal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #1a1a1a;
+      color: white;
+      padding: 24px 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.9);
+      z-index: 100;
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.light #startupModal {
+      background-color: #f5f5f5;
+      color: black;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    #startupModal h2 {
+      margin: 0 0 10px 0;
+      text-align: center;
+    }
+
+    #startupModal h4 {
+      margin: 0 0 4px 0;
+      font-weight: normal;
+    }
+
+    #startupModal input {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #555;
+      font-family: monospace;
+      font-size: 14px;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+      width: 100%;
+    }
+
+    body.light #startupModal input {
+      border-color: #ccc;
+      background-color: white;
+      color: black;
+    }
+
+    #startupModal button {
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    #startupModal button:hover {
+      background-color: #666;
+    }
+
+    body.light #startupModal button {
+      background-color: #ccc;
+      color: black;
+    }
+
+    /* Bot Setup modal */
+    #botSetupModal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #1a1a1a;
+      color: white;
+      padding: 20px 26px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.9);
+      z-index: 101;
+      width: 300px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.light #botSetupModal {
+      background-color: #f5f5f5;
+      color: black;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    #botSetupModal h3 {
+      margin: 0 0 10px 0;
+      text-align: center;
+    }
+
+    #botSetupModal label {
+      font-weight: normal;
+      font-size: 14px;
+    }
+
+    #botSetupModal input {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #555;
+      font-family: monospace;
+      font-size: 14px;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    body.light #botSetupModal input {
+      border-color: #ccc;
+      background-color: white;
+      color: black;
+    }
+
+    #botSetupModal button {
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+      margin-top: 8px;
+    }
+
+    #botSetupModal button:hover {
+      background-color: #666;
+    }
+
+    body.light #botSetupModal button {
+      background-color: #ccc;
+      color: black;
+    }
+
+    /* Notification bubble */
+    #botNotification {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #222;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 20px;
+      font-family: monospace;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 110;
+      user-select: none;
+      max-width: 80%;
+      text-align: center;
+    }
+
+    body.light #botNotification {
+      background-color: #ddd;
+      color: #111;
+    }
+  </style>
+</head>
+<body class="dark">
+  <div id="concealBar">
+    <button id="toggleSideBtn" disabled>Switch side</button>
+  </div>
+
+  <div id="messages"></div>
+
+  <div id="input-area">
+    <button id="botSetupBtn" title="Set up a bot" disabled>Bot Setup</button>
+    <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" disabled />
+    <button id="sendBtn" disabled>Send</button>
+  </div>
+
+  <div id="startupModal">
+    <h2>Set Names for Each Side</h2>
+    <h4>Black side name:</h4>
+    <input type="text" id="blackNameInput" placeholder="Black side name" autocomplete="off" />
+    <h4>White side name:</h4>
+    <input type="text" id="whiteNameInput" placeholder="White side name" autocomplete="off" />
+    <button id="startChatBtn" disabled>Start Chat</button>
+  </div>
+
+  <div id="botSetupModal">
+    <h3>Bot Setup</h3>
+    <label for="botTriggerInput">Trigger phrase:</label>
+    <input type="text" id="botTriggerInput" placeholder="e.g. hello bot" autocomplete="off" />
+    <label for="botResponseInput">Bot response:</label>
+    <input type="text" id="botResponseInput" placeholder="e.g. Hello, human!" autocomplete="off" />
+    <button id="addBotBtn" disabled>Add Bot</button>
+    <button id="closeBotSetupBtn" style="margin-top: 8px; background: #a33;">Close</button>
+  </div>
+
+  <div id="botNotification"></div>
+
+  <script>
+    // Elements
+    const body = document.body;
+    const toggleSideBtn = document.getElementById('toggleSideBtn');
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const botSetupBtn = document.getElementById('botSetupBtn');
+
+    const startupModal = document.getElementById('startupModal');
+    const blackNameInput = document.getElementById('blackNameInput');
+    const whiteNameInput = document.getElementById('whiteNameInput');
+    const startChatBtn = document.getElementById('startChatBtn');
+
+    const botSetupModal = document.getElementById('botSetupModal');
+    const botTriggerInput = document.getElementById('botTriggerInput');
+    const botResponseInput = document.getElementById('botResponseInput');
+    const addBotBtn = document.getElementById('addBotBtn');
+    const closeBotSetupBtn = document.getElementById('closeBotSetupBtn');
+
+    const botNotification = document.getElementById('botNotification');
+
+    // State
+    let side = 'black'; // current user side
+    let blackName = '';
+    let whiteName = '';
+
+    // Bots array: each { trigger, response }
+    const bots = [];
+
+    // Enable or disable start button depending on inputs
+    function updateStartButton() {
+      startChatBtn.disabled = !(blackNameInput.value.trim() && whiteNameInput.value.trim());
+    }
+
+    blackNameInput.addEventListener('input', updateStartButton);
+    whiteNameInput.addEventListener('input', updateStartButton);
+
+    startChatBtn.addEventListener('click', () => {
+      blackName = blackNameInput.value.trim();
+      whiteName = whiteNameInput.value.trim();
+      startupModal.style.display = 'none';
+      toggleSideBtn.disabled = false;
+      botSetupBtn.disabled = false;
+      messageInput.disabled = false;
+      sendBtn.disabled = false;
+      messageInput.focus();
+      renderMessages(); // to reflect names if needed
+    });
+
+    // Toggle side and update UI theme accordingly
+    toggleSideBtn.addEventListener('click', () => {
+      side = side === 'black' ? 'white' : 'black';
+      updateBodyClass();
+      messageInput.focus();
+    });
+
+    // Update body class for theme based on side
+    function updateBodyClass() {
+      if (side === 'black') {
+        body.classList.remove('light');
+        body.classList.add('dark');
+      } else {
+        body.classList.remove('dark');
+        body.classList.add('light');
+      }
+    }
+
+    updateBodyClass();
+
+    // Message array: each { side: 'black'|'white', text: string }
+    const messageList = [];
+
+    function addMessage(side, text) {
+      messageList.push({ side, text });
+      renderMessages();
+      scrollMessagesToBottom();
+    }
+
+    function renderMessages() {
+      messagesDiv.innerHTML = '';
+      for (const msg of messageList) {
+        const div = document.createElement('div');
+        div.classList.add('message');
+        // Class for color and alignment
+        div.classList.add(`you-${msg.side}`);
+
+        // Show sender name and colon before message
+        const senderName = msg.side === 'black' ? blackName : whiteName;
+        div.textContent = `${senderName}: ${msg.text}`;
+
+        messagesDiv.appendChild(div);
+      }
+    }
+
+    function scrollMessagesToBottom() {
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // Send message on button click or enter key (only if input enabled)
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !sendBtn.disabled) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    function sendMessage() {
+      if (messageInput.value.trim() === '') return;
+      const text = messageInput.value.trim();
+      addMessage(side, text);
+      messageInput.value = '';
+
+      checkBots(text.toLowerCase());
+    }
+
+    // Bot notification show/hide management
+    let botNotifyTimeout;
+
+    function showBotNotification(text) {
+      clearTimeout(botNotifyTimeout);
+      botNotification.textContent = text;
+      botNotification.style.opacity = '1';
+      botNotification.style.pointerEvents = 'auto';
+
+      botNotifyTimeout = setTimeout(() => {
+        botNotification.style.opacity = '0';
+        botNotification.style.pointerEvents = 'none';
+      }, 4000);
+    }
+
+    // Check bots triggers
+    function checkBots(text) {
+      const triggeredResponses = [];
+      for (const bot of bots) {
+        if (text.includes(bot.trigger.toLowerCase())) {
+          triggeredResponses.push(bot.response);
+        }
+      }
+      if (triggeredResponses.length > 0) {
+        // Show each response sequentially every 4 seconds
+        let index = 0;
+        showBotNotification(triggeredResponses[index]);
+        index++;
+        if (triggeredResponses.length > 1) {
+          const interval = setInterval(() => {
+            if (index >= triggeredResponses.length) {
+              clearInterval(interval);
+              botNotification.style.opacity = '0';
+              botNotification.style.pointerEvents = 'none';
+              return;
+            }
+            showBotNotification(triggeredResponses[index]);
+            index++;
+          }, 4000);
+        }
+      }
+    }
+
+    // Bot Setup modal open/close
+    botSetupBtn.addEventListener('click', () => {
+      botTriggerInput.value = '';
+      botResponseInput.value = '';
+      addBotBtn.disabled = true;
+      botSetupModal.style.display = 'flex';
+      botTriggerInput.focus();
+    });
+
+    closeBotSetupBtn.addEventListener('click', () => {
+      botSetupModal.style.display = 'none';
+      messageInput.focus();
+    });
+
+    // Enable add button only if both inputs have text
+    function updateAddBotButton() {
+      addBotBtn.disabled = !(botTriggerInput.value.trim() && botResponseInput.value.trim());
+    }
+
+    botTriggerInput.addEventListener('input', updateAddBotButton);
+    botResponseInput.addEventListener('input', updateAddBotButton);
+
+    addBotBtn.addEventListener('click', () => {
+      const trigger = botTriggerInput.value.trim();
+      const response = botResponseInput.value.trim();
+      bots.push({ trigger, response });
+      botSetupModal.style.display = 'none';
+      messageInput.focus();
+      alert(`Bot added:\nTrigger: "${trigger}"\nResponse: "${response}"`);
+    });
+
+  </script>
+</body>
+</html>
